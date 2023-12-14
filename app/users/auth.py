@@ -9,15 +9,21 @@ class AuthenticatedUser(UserMixin):
         self.user = user
 
 def login():
+    if not request.is_json:
+        return jsonify({'status': 'error', 'message': 'Missing JSON in request'}), 400
+
     data = request.get_json()
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(email=username).first()
+    if not email or not password:
+        return jsonify({'status': 'error', 'message': 'Missing email or password'}), 400
+
+    user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
         authenticated_user = AuthenticatedUser(user)
         login_user(authenticated_user)
         return jsonify({'status': 'success', 'user': {'name': user.nombre, 'email': user.email}})
     else:
-        return jsonify({'status': 'error', 'message': 'Invalid username or password'}), 401
+        return jsonify({'status': 'error', 'message': 'Invalid email or password'}), 401
