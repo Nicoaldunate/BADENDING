@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 import re
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, current_user, login_required, logout_user
-from .pdf_processing import extract_info_from_pdf, save_file, check_comunas
+from .pdf_processing import extract_info_from_pdf, save_file, check_comunas , is_pdf
 from .auth import login
 
 from .usermodel import User
@@ -63,6 +63,8 @@ def index():
 def extract_info():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'})
+    if not is_pdf(pdf_path):
+         return jsonify({'error': 'No es un PDF'})
 
     file = request.files['file']
 

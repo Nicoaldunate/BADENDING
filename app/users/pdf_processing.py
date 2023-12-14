@@ -8,7 +8,14 @@ from pdfminer.layout import LAParams, LTTextBox
 from pdfminer.converter import PDFPageAggregator
 
 
-
+def is_pdf(file_path):
+    try:
+        with open(file_path, 'rb') as file:
+            header = file.read(4)
+            return header == b'%PDF'
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
 
 
 def extract_information_between_keywords(pdf_path,start_keyword,end_keyword):
