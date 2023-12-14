@@ -7,49 +7,12 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBox
 from pdfminer.converter import PDFPageAggregator
 
-def open_pdf(file):
-    parser = PDFParser(file)
-    document = PDFDocument(parser)
-    return document
-
-def get_layout(document):
-    rsrcmgr = PDFResourceManager()
-    laparams = LAParams()
-    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-    interpreter = PDFPageInterpreter(rsrcmgr, device)
-    for page in PDFPage.create_pages(document):
-        interpreter.process_page(page)
-        layout = device.get_result()
-        yield layout
-
-def extract_text(layout, positions):
-    result_text = ""
-    for element in layout:
-        if isinstance(element, LTTextBox):
-            x, y, text = element.bbox[0], element.bbox[3], element.get_text()
-            for position in positions:
-                x1, y1, x2, y2 = position
-                if x1 < x < x2 and y1 < y < y2:
-                    result_text = text
-                    return result_text
-    return result_text
-
-def extract_text_by_position(pdf_path):
-    positions = [(415, 347, 416, 350)]  
-    document = open_pdf(pdf_path)
-    for layout in get_layout(document):
-        result_text = extract_text(layout, positions)
-        if result_text:
-            break
-    return result_text
 
 
 
-def extract_information_between_keywords(pdf_path):
+
+def extract_information_between_keywords(pdf_path,start_keyword,end_keyword):
     extracted_information = []
-    start_keyword = "Domicilio:"
-    end_keyword = "Sucursales:"
-
     try:
         doc = fitz.open(pdf_path)
     except Exception as e:
@@ -74,7 +37,6 @@ def extract_information_between_keywords(pdf_path):
             except Exception as e:
                 return f"Error splitting match: {e}"
             extracted_information.append(location)
-
     try:
         doc.close()
     except Exception as e:
@@ -90,9 +52,10 @@ def save_file(file, path):
 
 def extract_info_from_pdf(path):
     with open(path, 'rb') as file:
-        extracted_info = extract_information_between_keywords(file)
-        extracted_rut = extract_text_by_position(file).strip()
-    return extracted_info, extracted_rut    
+        extracted_info = extract_information_between_keywords(file ,"Domicilio:","Sucursales:")
+        extracted_ruts = extract_information_between_keywords(file,"RUT del emisor:" , "Fecha de generación de la carpeta:")
+        extracted_rut = extracted_ruts[0] if extracted_ruts else None
+    return extracted_info, extracted_rut
 
 def check_comunas(extracted_info, comunas):
     comunas_lower = [comuna.lower() for comuna in comunas]

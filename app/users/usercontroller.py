@@ -1,6 +1,6 @@
 from app import  db
 from flask import Blueprint, request, jsonify
-
+import re
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, current_user, login_required, logout_user
 from .pdf_processing import extract_info_from_pdf, save_file, check_comunas
@@ -76,8 +76,12 @@ def extract_info():
         save_file(file, pdf_path)
 
         extracted_info, extracted_rut = extract_info_from_pdf(pdf_path)
+        
+    rut_pattern = r"^([1-9]\d*)\s*[-−]\s*(\d|k|K)$"
+    if re.match(rut_pattern, extracted_rut) is None:
+        return jsonify({'error': 'Invalid RUT', 'rut': extracted_rut})
 
-        if check_comunas(extracted_info, comunas):
-            return jsonify({'result': 'Approved', 'rut': extracted_rut})
+    if check_comunas(extracted_info, comunas):
+        return jsonify({'result': 'Approved', 'rut': extracted_rut})
 
-        return jsonify({'result': 'Empresa fuera de region', 'rut': extracted_rut})
+    return jsonify({'result': 'Empresa fuera de region', 'rut': extracted_rut})
