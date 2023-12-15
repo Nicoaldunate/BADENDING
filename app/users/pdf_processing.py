@@ -13,9 +13,13 @@ def is_pdf(file_path):
         with open(file_path, 'rb') as file:
             header = file.read(4)
             return header == b'%PDF'
+    except FileNotFoundError:
+        print(f"Error: File not found: {file_path}")
+    except PermissionError:
+        print(f"Error: Permission denied: {file_path}")
     except Exception as e:
-        print(f"Error: {e}")
-        return False
+        print(f"Unexpected error: {e}")
+    return False
 
 
 def extract_information_between_keywords(pdf_path,start_keyword,end_keyword):

@@ -74,7 +74,7 @@ def extract_info():
 
     extracted_info, extracted_rut = extract_info_from_pdf(pdf_path)
     if extracted_rut is None:
-        return jsonify({'error': 'No RUT found'})
+        return jsonify({'error': 'documento no valido'})
 
     if not is_valid_rut(extracted_rut):
         return jsonify({'error': 'Invalid RUT', 'rut': extracted_rut})
