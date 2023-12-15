@@ -8,12 +8,13 @@ from .auth import login
 
 from .usermodel import User
 
-
 userBp = Blueprint('user', __name__)   
+
 login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.query.get(int(user_id))
+
 
 @userBp.route('/register', methods=['POST'])
 def register():
@@ -24,8 +25,10 @@ def register():
             return jsonify({'error': 'Email already in use'}), 400
         hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256') 
         new_user = User(
+            nombre=data['nombre'],
             email=data['email'],
             password=hashed_password,
+            rut_compania=data['rut_compania'],
         )
         db.session.add(new_user)
         db.session.commit()
@@ -63,8 +66,7 @@ def index():
 def extract_info():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'})
-    if not is_pdf(pdf_path):
-         return jsonify({'error': 'No es un PDF'})
+    
 
     file = request.files['file']
 
@@ -75,15 +77,20 @@ def extract_info():
 
     if file:
         pdf_path = "D:\\Users\\nicko\\Documents\\Cosas Cidere\\PDFS" + file.filename
+
         save_file(file, pdf_path)
 
         extracted_info, extracted_rut = extract_info_from_pdf(pdf_path)
-        
+    
+    if not is_pdf(pdf_path):
+         return jsonify({'error': 'No es un PDF'})
+    if extracted_rut is None:
+        return jsonify({'error': 'No RUT found'})
     rut_pattern = r"^([1-9]\d*)\s*[-−]\s*(\d|k|K)$"
     if re.match(rut_pattern, extracted_rut) is None:
         return jsonify({'error': 'Invalid RUT', 'rut': extracted_rut})
 
     if check_comunas(extracted_info, comunas):
         return jsonify({'result': 'Approved', 'rut': extracted_rut})
-
+        
     return jsonify({'result': 'Empresa fuera de region', 'rut': extracted_rut})

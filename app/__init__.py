@@ -1,30 +1,30 @@
-
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 
+# Move the db initialization to the top
+db = SQLAlchemy()
 
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object('configuration.DevConfig')
 
+    db.init_app(app)
 
-#configuraciones
+    login_manager = LoginManager()
+    login_manager.init_app(app)
 
-app = Flask(__name__)
-app.config.from_object('configuration.DevConfig')
+    from app.users.usercontroller import userBp, load_user
+    login_manager.user_loader(load_user)
 
+    CORS(app, supports_credentials=True)
+    Migrate(app, db)
 
-#inicializaciones
-login_manager = LoginManager(app)
-CORS(app, supports_credentials=True)
-db=SQLAlchemy(app)
-migrage=Migrate(app,db)
-login_manager.init_app(app)
+    app.register_blueprint(userBp)
 
+    with app.app_context():
+        db.create_all()
 
-#blueprints
-from app.users.usercontroller import userBp
-app.register_blueprint(userBp)
-
-with app.app_context():
-    db.create_all()
+    return app

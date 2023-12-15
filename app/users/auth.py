@@ -24,6 +24,6 @@ def login():
     if user and check_password_hash(user.password, password):
         authenticated_user = AuthenticatedUser(user)
         login_user(authenticated_user)
-        return jsonify({'status': 'success', 'user': {'name': user.nombre, 'email': user.email}})
+        return jsonify({'status': 'success', 'user': {'username': user.nombre, 'email': user.email , 'rut_compania': user.rut_compania, 'compania_local': user.compania_local}})
     else:
         return jsonify({'status': 'error', 'message': 'Invalid email or password'}), 401
