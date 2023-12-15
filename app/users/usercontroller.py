@@ -64,33 +64,40 @@ def index():
 
 @userBp.route('/info', methods=['POST'])
 def extract_info():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'})
-    
+    file = validate_file(request)
+    if isinstance(file, dict): 
+        return jsonify(file)
 
-    file = request.files['file']
-
-    comunas =["ANDACOLLO","COQUIMBO","LA HIGUERA","LA SERENA","PAIHUANO","VICUÑA","COMBARBALA","MONTE PATRIA","OVALLE","PUNITAQUI", "RIO HURTADO","CANELA","ILLAPEL","LOS VILOS","SALAMANCA"]
-
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-
-    if file:
-        pdf_path = "D:\\Users\\nicko\\Documents\\Cosas Cidere\\PDFS" + file.filename
-
-        save_file(file, pdf_path)
-
-        extracted_info, extracted_rut = extract_info_from_pdf(pdf_path)
-    
+    pdf_path = save_file(file)
     if not is_pdf(pdf_path):
-         return jsonify({'error': 'No es un PDF'})
+        return jsonify({'error': 'No es un PDF'})
+
+    extracted_info, extracted_rut = extract_info_from_pdf(pdf_path)
     if extracted_rut is None:
         return jsonify({'error': 'No RUT found'})
-    rut_pattern = r"^([1-9]\d*)\s*[-−]\s*(\d|k|K)$"
-    if re.match(rut_pattern, extracted_rut) is None:
+
+    if not is_valid_rut(extracted_rut):
         return jsonify({'error': 'Invalid RUT', 'rut': extracted_rut})
 
-    if check_comunas(extracted_info, comunas):
-        return jsonify({'result': 'Approved', 'rut': extracted_rut})
-        
-    return jsonify({'result': 'Empresa fuera de region', 'rut': extracted_rut})
+    if not check_comunas(extracted_info):
+        return jsonify({'result': 'Empresa fuera de region', 'rut': extracted_rut})
+
+    return jsonify({'result': 'Approved', 'rut': extracted_rut})
+
+def validate_file(request):
+    if 'file' not in request.files:
+        return {'error': 'No file provided'}
+
+    file = request.files['file']
+    if file.filename == '':
+        return {'error': 'No selected file'}
+
+    return file
+
+def save_file(file):
+    pdf_path = "D:\\Users\\nicko\\Documents\\Cosas Cidere\\PDFS" + file.filename
+    return pdf_path
+
+def is_valid_rut(rut):
+    rut_pattern = r"^([1-9]\d*)\s*[-−]\s*(\d|k|K)$"
+    return re.match(rut_pattern, rut) is not None
