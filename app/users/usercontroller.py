@@ -29,6 +29,7 @@ def register():
             email=data['email'],
             password=hashed_password,
             rut_compania=data['rut_compania'],
+            compania_local=None  # Set compania_local to None
         )
         db.session.add(new_user)
         db.session.commit()

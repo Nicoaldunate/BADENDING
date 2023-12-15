@@ -1,11 +1,5 @@
 import fitz
 import re
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfpage import PDFPage
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox
-from pdfminer.converter import PDFPageAggregator
 
 
 def is_pdf(file_path):
@@ -68,7 +62,8 @@ def extract_info_from_pdf(path):
         extracted_rut = extracted_ruts[0] if extracted_ruts else None
     return extracted_info, extracted_rut
 
-def check_comunas(extracted_info, comunas):
+def check_comunas(extracted_info):
+    comunas =["ANDACOLLO","COQUIMBO","LA HIGUERA","LA SERENA","PAIHUANO","VICUÑA","COMBARBALA","MONTE PATRIA","OVALLE","PUNITAQUI", "RIO HURTADO","CANELA","ILLAPEL","LOS VILOS","SALAMANCA"]
     comunas_lower = [comuna.lower() for comuna in comunas]
     for info in extracted_info:
         if info.lower() in comunas_lower:

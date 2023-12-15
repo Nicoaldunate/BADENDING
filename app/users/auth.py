@@ -13,17 +13,17 @@ def login():
         return jsonify({'status': 'error', 'message': 'Missing JSON in request'}), 400
 
     data = request.get_json()
-    email = data.get('email')
+    rut = data.get('rut')  # Change this line
     password = data.get('password')
 
-    if not email or not password:
-        return jsonify({'status': 'error', 'message': 'Missing email or password'}), 400
+    if not rut or not password:  # And this line
+        return jsonify({'status': 'error', 'message': 'Missing rut or password'}), 400  # And this line
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(rut_compania=rut).first()  # And this line
 
     if user and check_password_hash(user.password, password):
         authenticated_user = AuthenticatedUser(user)
         login_user(authenticated_user)
-        return jsonify({'status': 'success', 'user': {'username': user.nombre, 'email': user.email , 'rut_compania': user.rut_compania, 'compania_local': user.compania_local}})
+        return jsonify({'status': 'success', 'user': {'username': user.nombre, 'rut': user.rut_compania, 'compania_local': user.compania_local}})  # And this line
     else:
-        return jsonify({'status': 'error', 'message': 'Invalid email or password'}), 401
+        return jsonify({'status': 'error', 'message': 'Invalid rut or password'}), 401  # And this line
