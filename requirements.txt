@@ -39,7 +39,7 @@ pandas==2.1.4
 pathlib==1.0.1
 pdfminer==20191125
 prov==2.0.0
-pycryptodome==3.19.0
+pycryptodome==3.19.1
 pydot==1.4.2
 PyJWT==2.8.0
 PyMuPDF==1.23.7
